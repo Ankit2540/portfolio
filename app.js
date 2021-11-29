@@ -1,6 +1,8 @@
 var express=require("express");
 var bodyParser=require("body-parser");
   
+
+const { check, validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost:27017/ankit');
 var db=mongoose.connection;
@@ -17,7 +19,22 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
   
-app.post('/sign_up', function(req,res){
+app.post('/sign_up', [
+    check('email', 'Email length should be 10 to 30 characters')
+                    .isEmail().isLength({ min: 10, max: 30 }),
+    check('name', 'Name length should be 10 to 20 characters')
+                    .isLength({ min: 10, max: 20 }),
+    check('phone', 'Mobile number should contains 10 digits')
+                    .isLength({ min: 10, max: 10 }),
+  ], function(req,res){
+    
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.redirect('unsuccess.html');
+        console.log(errors)
+        
+    }
+
     var name = req.body.name;
     var email =req.body.email;
     var phone =req.body.phone;
@@ -30,7 +47,6 @@ app.post('/sign_up', function(req,res){
     }
 db.collection('details').insertOne(data,function(err, collection){
         if (err) throw err;
-        console.log("Record inserted Successfully");
               
     });
           
